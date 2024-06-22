@@ -28,6 +28,7 @@ protected:
   uint64_t capacity_;
   uint64_t size_ = 0;
   std::queue<std::string> data_;
+  std::string blank_;
   std::string_view view_;
   bool closed_ = false;
   uint64_t pushed_ = 0, popped_ = 0;

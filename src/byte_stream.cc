@@ -2,7 +2,7 @@
 
 using namespace std;
 
-ByteStream::ByteStream( uint64_t capacity ) : capacity_( capacity ), data_(std::queue<std::string>()), view_(std::string_view("")) {}
+ByteStream::ByteStream( uint64_t capacity ) : capacity_( capacity ), data_(std::queue<std::string>()), blank_(), view_(std::string_view(blank_)) {}
 
 bool Writer::is_closed() const
 {
@@ -72,7 +72,7 @@ void Reader::pop( uint64_t len )
     if (len >= view_.size()) {
       len -= view_.size();
       data_.pop();
-      view_ = data_.front();
+      view_ = data_.empty() ? blank_ : data_.front();
       continue;
     }
 
