@@ -2,7 +2,7 @@
 
 using namespace std;
 
-ByteStream::ByteStream( uint64_t capacity ) : capacity_( capacity ), data_(std::queue<std::string>()), view_( std::string_view("")) {}
+ByteStream::ByteStream( uint64_t capacity ) : capacity_( capacity ), data_(std::queue<std::string>()), view_(std::string_view("")) {}
 
 bool Writer::is_closed() const
 {
@@ -19,8 +19,7 @@ void Writer::push( string data )
   pushed_ += len;
 
   if (len < data.size()) {
-    // TODO use string_view
-    data = data.substr(0, len);
+    data.erase(len);
   }
 
   data_.push(std::move(data));
@@ -62,6 +61,10 @@ string_view Reader::peek() const
 void Reader::pop( uint64_t len )
 {
   len = min( len, size_ );
+  if (len == 0) {
+    return;
+  }
+
   size_ -= len;
   popped_ += len;
 
