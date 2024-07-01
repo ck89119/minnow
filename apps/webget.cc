@@ -1,4 +1,5 @@
 #include "socket.hh"
+#include "tcp_minnow_socket.hh"
 
 #include <cstdlib>
 #include <iostream>
@@ -11,11 +12,9 @@ void get_URL( const string& host, const string& path )
 {
   cout << "Function called: get_URL(" << host << ", " << path << ")\n";
 
-  TCPSocket tcp_socket = TCPSocket();
+  CS144TCPSocket tcp_socket = CS144TCPSocket();
   Address address = Address( host, "80" );
   tcp_socket.connect( address );
-  //  cout << address.ip() << ":" << address.port() << endl;
-
   tcp_socket.write( "GET " + path + " HTTP/1.1\r\n" );
   tcp_socket.write( "Host: " + host + "\r\n" );
   tcp_socket.write( "Connection: close\r\n" );
