@@ -10,13 +10,15 @@
 #include <memory>
 #include <optional>
 #include <queue>
+#include <map>
 
 class TCPSender
 {
 public:
   /* Construct TCP sender with given default Retransmission Timeout and possible ISN */
   TCPSender( ByteStream&& input, Wrap32 isn, uint64_t initial_RTO_ms )
-    : input_( std::move( input ) ), isn_( isn ), initial_RTO_ms_( initial_RTO_ms )
+    : input_( std::move( input ) ), isn_( isn ), initial_RTO_ms_( initial_RTO_ms ), synced(), finned(), timer_(),
+    recvr_expect_absolute_seqno_(), window_size_(1), consecutive_retransmissions_(), not_acked_(), not_acked_count_()
   {}
 
   /* Generate an empty TCPSenderMessage */
@@ -44,8 +46,26 @@ public:
   const Reader& reader() const { return input_.reader(); }
 
 private:
+  void send_msg(TCPSenderMessage &&msg, const TransmitFunction& transmit );
+
+  uint64_t get_absolute_seqno(const Wrap32& seqno);
+
+  Wrap32 next_seqno() const { return isn_ + synced + reader().bytes_popped() + finned; }
+
+  uint64_t available_window_size() const;
+
   // Variables initialized in constructor
   ByteStream input_;
   Wrap32 isn_;
   uint64_t initial_RTO_ms_;
+
+  bool synced, finned;
+  // 0 if no outstanding msg
+  uint64_t timer_;
+  uint64_t recvr_expect_absolute_seqno_, window_size_;
+  uint64_t consecutive_retransmissions_;
+
+  // expected_absolute_ackno -> msg
+  std::map<uint64_t, TCPSenderMessage> not_acked_;
+  uint64_t not_acked_count_;
 };
