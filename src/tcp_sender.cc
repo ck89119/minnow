@@ -41,7 +41,6 @@ void TCPSender::push( const TransmitFunction& transmit )
   if (!finned && input_.reader().is_finished() && len > 0) {
     finned = true;
     msg.FIN = true;
-    len -= 1;
   }
 
   send_msg(std::move(msg), transmit);
@@ -68,13 +67,16 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
   }
 
   bool new_ack = false;
-  for (auto it = not_acked_.begin(); it != not_acked_.end(); it = not_acked_.erase(it)) {
-    if (it->first > absolute_ackno) {
+  while (!not_acked_.empty()) {
+    auto &not_acked_msg = not_acked_.front();
+    auto absolute_seqno = get_absolute_seqno(not_acked_msg.seqno + not_acked_msg.sequence_length());
+    if (absolute_seqno > absolute_ackno) {
       break;
     }
 
     new_ack = true;
-    not_acked_count_ -= it->second.sequence_length();
+    not_acked_count_ -= not_acked_msg.sequence_length();
+    not_acked_.pop_front();
   }
 
   if (new_ack)  {
@@ -95,7 +97,7 @@ void TCPSender::tick( uint64_t ms_since_last_tick, const TransmitFunction& trans
   }
 
   if (timer_ <= ms_since_last_tick) {
-    transmit(not_acked_.begin()->second);
+    transmit(not_acked_.front());
 
     consecutive_retransmissions_ += window_size_ > 0;
     timer_ = initial_RTO_ms_ << consecutive_retransmissions_;
@@ -112,7 +114,7 @@ void TCPSender::send_msg(TCPSenderMessage&& msg, const TransmitFunction& transmi
   }
 
   transmit( msg );
-  not_acked_[get_absolute_seqno(msg.seqno + msg_len)] = std::move(msg) ;
+  not_acked_.push_back(std::move(msg));
   not_acked_count_ += msg_len;
   // if no outstanding msgs, transmit immediately and set timer
   if (timer_ == 0) {

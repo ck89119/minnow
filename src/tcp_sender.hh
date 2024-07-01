@@ -10,7 +10,6 @@
 #include <memory>
 #include <optional>
 #include <queue>
-#include <map>
 
 class TCPSender
 {
@@ -66,6 +65,6 @@ private:
   uint64_t consecutive_retransmissions_;
 
   // expected_absolute_ackno -> msg
-  std::map<uint64_t, TCPSenderMessage> not_acked_;
+  std::deque<TCPSenderMessage> not_acked_;
   uint64_t not_acked_count_;
 };
