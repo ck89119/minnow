@@ -1,6 +1,8 @@
 #pragma once
 
 #include <queue>
+#include <map>
+#include <unordered_map>
 
 #include "address.hh"
 #include "ethernet_frame.hh"
@@ -65,6 +67,7 @@ public:
   OutputPort& output() { return *port_; }
   std::queue<InternetDatagram>& datagrams_received() { return datagrams_received_; }
 
+
 private:
   // Human-readable name of the interface
   std::string name_;
@@ -81,4 +84,24 @@ private:
 
   // Datagrams that have been received
   std::queue<InternetDatagram> datagrams_received_ {};
+
+  std::map<uint32_t, std::pair<EthernetAddress, uint64_t>> mp_ {};
+  std::deque<std::map<uint32_t, std::pair<EthernetAddress, uint64_t>>::iterator> list_ {};
+
+  // ms since obj construct
+  uint64_t age_ = 0;
+
+  // remember ip -> eth address mapping for 30s
+  static constexpr uint64_t ARP_MAPPING_DURATION = 30 * 1000;
+  // sent arp request as often as 5s per once
+  static constexpr uint64_t ARP_REQUEST_GAP = 5 * 1000;
+
+  std::unordered_map<uint32_t, std::vector<InternetDatagram>> datagrams_waiting_ {};
+
+  std::unordered_map<uint32_t, uint64_t> unacked_arp_ {};
+  std::deque<std::unordered_map<uint32_t, uint64_t>::iterator> unacked_arp_list_ {};
+
+  void send_datagram( const InternetDatagram& dgram, const EthernetAddress& next_hop );
+
+  void send_arp_message(uint16_t type, const EthernetAddress &dst_eth_addr, uint32_t dst_ip_addr);
 };
