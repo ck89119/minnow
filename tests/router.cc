@@ -176,8 +176,10 @@ public:
                                                                      uun,
                                                                      random_router_ethernet_address(),
                                                                      Address { "198.178.229.1" } ) ) )
-    , hs4_id( _router.add_interface(
-        make_shared<NetworkInterface>( "hs4", hs, random_router_ethernet_address(), Address { "143.195.0.2" } ) ) )
+    , hs4_id( _router.add_interface(make_shared<NetworkInterface>( "hs4",
+                                                                    hs,
+                                                                    random_router_ethernet_address(),
+                                                                    Address { "143.195.0.2" } ) ) )
     , mit5_id( _router.add_interface( make_shared<NetworkInterface>( "mit5",
                                                                      empty,
                                                                      random_router_ethernet_address(),

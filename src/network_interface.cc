@@ -34,14 +34,15 @@ void NetworkInterface::send_datagram( const InternetDatagram& dgram, const Addre
     return;
   }
 
+  // save dgram
+  datagrams_waiting_[ipv4].emplace_back(dgram);
+
   // sent arp request
   if (unacked_arp_.find(ipv4) == unacked_arp_.end()) {
     send_arp_message(ARPMessage::OPCODE_REQUEST, ETHERNET_BROADCAST, ipv4);
     unacked_arp_[ipv4] = age_ + ARP_REQUEST_GAP;
     unacked_arp_list_.push_back(unacked_arp_.find(ipv4));
   }
-
-  datagrams_waiting_[ipv4].emplace_back(dgram);
 }
 
 //! \param[in] frame the incoming Ethernet frame

@@ -11,6 +11,16 @@
 class Router
 {
 public:
+  struct Entry
+  {
+    uint32_t route_prefix;
+    uint8_t prefix_length;
+    std::optional<Address> next_hop;
+    size_t interface_num ;
+  };
+
+  Router() : route_table_(std::vector<std::vector<Entry>>(33)) {}
+
   // Add an interface to the router
   // \param[in] interface an already-constructed network interface
   // \returns The index of the interface after it has been added to the router
@@ -33,6 +43,10 @@ public:
   void route();
 
 private:
+
   // The router's collection of network interfaces
   std::vector<std::shared_ptr<NetworkInterface>> _interfaces {};
+
+  std::vector<std::vector<Entry>> route_table_ {};
+
 };
